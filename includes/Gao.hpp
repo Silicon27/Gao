@@ -72,20 +72,6 @@ namespace Gao {
         Perf_Spec perf_spec;
     };
 
-    Gaolette create_gaolette(
-
-
-
-
-
-    Perf_Spec spec, ) {
-
-    }
-
-    std::string convert_to_gao_instruction(Perf_Spec perf_spec) {
-        std::string gao_instruction = "create:";
-    }
-
     extern char **environ;
 
     /// Launch is, well if I were to define it, the API gateway at the base
@@ -99,17 +85,17 @@ namespace Gao {
 
         static std::filesystem::path get_gao_binary() {
 #if defined(__x86_64__)
-            arch = "x86_64";
+            arch_ = "x86_64";
             return std::string(std::getenv("GAO_BIN_DIR")) + std::string("/x86_64");
 #elif defined(__i386__)
-            arch = "i386";
+            arch_ = "i386";
             return std::string(std::getenv("GAO_BIN_DIR")) + std::string("/i386");
 #elif defined(__arm__)
-            arch = "arm";
-            return std::string(std::getenv("GAO_BIN_DIR")) + std::string("/arm");
+            arch_ = "arm";
+            return {std::getenv("GAO_BIN_DIR") + std::string("/arm")};
 #elif defined(__aarch64__)
             arch_ = "aarch64";
-            return std::string(std::getenv("GAO_BIN_DIR")) + std::string("/aarch64");
+            return {std::getenv("GAO_BIN_DIR") + std::string("/aarch64")};
 #endif
         }
 
@@ -156,24 +142,33 @@ namespace Gao {
             }
         }
 
-        char* read_line() const {
-            char* line = nullptr;
-            size_t len = 0;
-            do {
-                ssize_t nread = read(socket_, &line, len);
-                if (nread == -1) {
-                    throw std::runtime_error("read failed");
-                }
-                len += nread;
-            } while (line[len - 1] != '\n');
-            line[len - 1] = '\0';
-            return line;
+        [[nodiscard]] char* read_line() const {
+            
         }
 
         int write_line(const char* line) const {
-            return write(socket_, line, strlen(line));
+            return static_cast<int>(write(socket_, line, strlen(line)));
         }
     };
+
+
+    Gaolette create_gaolette(Perf_Spec spec,  Launch& gao_p) {
+        std::string gao_instruction = "crt:";
+        gao_instruction.append(std::to_string(spec.size_) + ",");
+        gao_instruction.append(std::to_string(static_cast<int>(spec.memory_policy_)) + ",");
+        gao_instruction.append(std::to_string(spec.max_memory_usage_) + ",");
+        gao_instruction.append(std::to_string(spec.max_cpu_cores_));
+        gao_p.write_line(gao_instruction.c_str());
+
+        // receive the SUC_INIT_GAOLETTE package from gao
+        std::string gao_response = gao_p.read_line();
+
+
+    }
+
+    std::string convert_to_gao_instruction(Perf_Spec perf_spec) {
+        std::string gao_instruction = "create:";
+    }
 }
 
 #endif //GAO_HPP
