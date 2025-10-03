@@ -165,11 +165,18 @@ namespace Gao {
 
         };
 
+        enum class Log_Prio {
+            ONLY_IF_LOGGING,
+            ANY
+        };
+
         struct Log {
             std::string msg;
             std::string time;
             Log_Type type;
-            explicit Log(Log_Type type, std::string msg_) : type(type) {
+            Log_Prio prio;
+
+            explicit Log(Log_Type type, std::string msg_, Log_Prio p) : msg(msg_), type(type), prio(p) {
                 switch (type) {
                     case Log_Type::GENERIC_SUCCESS:
                         msg = "[" + colors::SUCCESS + "SUCCESS" + colors::RESET + "] " + msg_;
@@ -187,11 +194,39 @@ namespace Gao {
             }
         };
 
-        void log(Log log) {
+        std::vector<Log> logs_;
+
+        void log(const Log& log) {
             if (logging_) {
-                std::cout << log.msg << std::endl;
+                logs_.emplace_back(log);
             }
         }
+
+        void dump_logs(bool clear = true) {
+            for (const auto& log : logs_) {
+                if (log.prio == Log_Prio::ANY) {
+                    std::cout << log.msg << "\n";
+                } else if (log.prio == Log_Prio::ONLY_IF_LOGGING && logging_) {
+                    std::cout << log.msg << "\n";
+                }
+            }
+            if (clear) {
+                logs_.clear();
+            }
+        }
+
+        void print_log(bool clear = true) {
+            if (logs_[0].prio == Log_Prio::ANY) {
+                std::cout << logs_[0].msg << "\n";
+            } else if (logs_[0].prio == Log_Prio::ONLY_IF_LOGGING && logging_) {
+                std::cout << logs_[0].msg << "\n";
+            }
+            if (clear) {
+                // erase logs_[0]
+                logs_.erase(logs_.begin());
+            }
+        }
+
 
     public:
         explicit Launch() {
@@ -288,6 +323,7 @@ namespace Gao {
         gao_instruction.append(std::to_string(static_cast<int>(spec.memory_policy_)) + ",");
         gao_instruction.append(std::to_string(spec.max_memory_usage_) + ",");
         gao_instruction.append(std::to_string(spec.max_cpu_cores_));
+
         gao_p.write_line(gao_instruction.c_str());
 
         // we need to wait until read_line contains valid buffer space that we can read
