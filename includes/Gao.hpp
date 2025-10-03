@@ -14,8 +14,63 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <utility>
+#include <stdexcept>
+
+namespace Gao::exceptions {
+    class Failed_To_Create_Gaolette : public std::exception {
+        std::vector<std::string> msg_;
+        int code = -1;
+    public:
+        explicit Failed_To_Create_Gaolette(int code) : code(code) {
+            msg_.emplace_back("Gaolette creation failed with error code: " + std::to_string(code));
+            if (code == -1) {
+                msg_.emplace_back("Unknown error occurred during Gaolette creation.");
+            } else if (code == 1) {
+                msg_.emplace_back("Invalid performance specification provided.");
+            } else if (code == 2) {
+                msg_.emplace_back("Insufficient system resources to create Gaolette.");
+            } else if (code == 3) {
+                msg_.emplace_back("Permission denied to create Gaolette.");
+            } else {
+                msg_.emplace_back("Unrecognized error code.");
+            }
+        }
+
+        [[nodiscard]] const char* what() const noexcept override {
+            return msg_.data()->c_str();
+        }
+    };
+}
 
 namespace Gao {
+    inline namespace colors {
+        constexpr auto RESET = "\033[0m";
+        constexpr auto RED = "\033[31m";
+        constexpr auto GREEN = "\033[32m";
+        constexpr auto YELLOW = "\033[33m";
+        constexpr auto BLUE = "\033[34m";
+        constexpr auto MAGENTA = "\033[35m";
+        constexpr auto CYAN = "\033[36m";
+        constexpr auto BOLD = "\033[1m";
+        constexpr auto UNDERLINE = "\033[4m";
+
+        constexpr auto BG_RED = "\033[41m";
+        constexpr auto BG_GREEN = "\033[42m";
+        constexpr auto BG_YELLOW = "\033[43m";
+        constexpr auto BG_BLUE = "\033[44m";
+        constexpr auto BG_MAGENTA = "\033[45m";
+        constexpr auto BG_CYAN = "\033[46m";
+        constexpr auto BG_WHITE = "\033[47m";
+        constexpr auto BG_RESET = "\033[49m";
+
+
+        constexpr inline auto ERROR = std::string("\033[31m") + "\033[1m";
+        constexpr inline auto SUCCESS = std::string("\033[32m") + "\033[1m";
+        constexpr inline auto WARNING = std::string("\033[33m") + "\033[1m";
+        constexpr inline auto NOTICE = std::string("\033[34m") + "\033[1m";
+    }
+
     enum class State {
         Operational, // the Gaolette is open for read/write
         ShutDown, // the Gaolette is closed for read/write
@@ -82,6 +137,7 @@ namespace Gao {
         static const char* arch_;
         posix_spawn_file_actions_t actions_;
         int socket_;
+        bool logging_ = false;
 
         static std::filesystem::path get_gao_binary() {
 #if defined(__x86_64__)
@@ -97,6 +153,44 @@ namespace Gao {
             arch_ = "aarch64";
             return {std::getenv("GAO_BIN_DIR") + std::string("/aarch64")};
 #endif
+        }
+
+        // NOTICE improve logging, its so ass rn
+
+        enum class Log_Type {
+            GENERIC_SUCCESS,
+            GENERIC_FAILURE,
+            GENERIC_NOTICE,
+            GENERIC_WARNING,
+
+        };
+
+        struct Log {
+            std::string msg;
+            std::string time;
+            Log_Type type;
+            explicit Log(Log_Type type, std::string msg_) : type(type) {
+                switch (type) {
+                    case Log_Type::GENERIC_SUCCESS:
+                        msg = "[" + colors::SUCCESS + "SUCCESS" + colors::RESET + "] " + msg_;
+                        break;
+                    case Log_Type::GENERIC_FAILURE:
+                        msg = "[" + colors::ERROR + "FAILURE" + colors::RESET + "] " + msg_;
+                        break;
+                    case Log_Type::GENERIC_NOTICE:
+                        msg = "[" + colors::NOTICE + "NOTICE" + colors::RESET + "] " + msg_;
+                        break;
+                    case Log_Type::GENERIC_WARNING:
+                        msg = "[" + colors::WARNING + "WARNING" + colors::RESET + "] " + msg_;
+                        break;
+                }
+            }
+        };
+
+        void log(Log log) {
+            if (logging_) {
+                std::cout << log.msg << std::endl;
+            }
         }
 
     public:
@@ -142,8 +236,44 @@ namespace Gao {
             }
         }
 
-        [[nodiscard]] char* read_line() const {
-            
+        [[nodiscard]] std::string read_line() const {
+            constexpr size_t BUF_SIZE = 1024;
+            char* buf = new char[BUF_SIZE];  // caller must delete[]
+            size_t len = 0;
+
+            while (true) {
+                ssize_t nread = ::read(socket_, buf + len, BUF_SIZE - len - 1);
+                if (nread == -1) {
+                    delete[] buf;
+                    throw std::runtime_error("read failed");
+                }
+                if (nread == 0) {  // EOF
+                    break;
+                }
+                len += nread;
+
+                // stop if newline is seen
+                if (buf[len - 1] == '\n') {
+                    buf[len - 1] = '\0';
+                    std::string temp = buf;
+                    delete[] buf;
+                    return temp;
+                }
+
+                // safety: stop if buffer full (no newline)
+                if (len >= BUF_SIZE - 1) {
+                    buf[len] = '\0';
+                    std::string temp = buf;
+                    delete[] buf;
+                    return temp;
+                }
+            }
+
+            // no newline before EOF
+            buf[len] = '\0';
+            std::string temp = buf;
+            delete[] buf;
+            return temp;
         }
 
         int write_line(const char* line) const {
@@ -160,8 +290,10 @@ namespace Gao {
         gao_instruction.append(std::to_string(spec.max_cpu_cores_));
         gao_p.write_line(gao_instruction.c_str());
 
-        // receive the SUC_INIT_GAOLETTE package from gao
-        std::string gao_response = gao_p.read_line();
+        // we need to wait until read_line contains valid buffer space that we can read
+        std::string response = gao_p.read_line();
+        if (response.empty() || response.substr(0, 2) == "-1")
+            throw std::runtime_error("Gaolette creation failed");
 
 
     }

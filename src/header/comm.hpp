@@ -42,6 +42,7 @@ public:
     Comm_Status get_status();
     void set_status(Comm_Status status);
     Pair<char*, ssize_t> read_line();
+    int write_line(const char* line);
 };
 
 #endif // COMM_HPP
