@@ -75,7 +75,8 @@ namespace Gao {
         Operational, // the Gaolette is open for read/write
         ShutDown, // the Gaolette is closed for read/write
         Locked, // the Gaolette is locked and is read-only
-        Operating // the Gaolette is running code and is open for read/write for console
+        Operating, // the Gaolette is running code and is open for read/write for console
+        Illformed // the Gaolette is ill-formed and cannot be used
     };
 
     // I kept the State::Operating to write and read for console in case the code operating in the Gaolette
@@ -121,7 +122,7 @@ namespace Gao {
     };
 
     struct Gaolette {
-        void* start;
+        std::string start; // start address of the Gaolette memory space
         size_t size;
         State state;
         Perf_Spec perf_spec;
@@ -176,7 +177,7 @@ namespace Gao {
             Log_Type type;
             Log_Prio prio;
 
-            explicit Log(Log_Type type, std::string msg_, Log_Prio p) : msg(msg_), type(type), prio(p) {
+            explicit Log(const Log_Type type, const std::string& msg_, const Log_Prio p) : msg(msg_), type(type), prio(p) {
                 switch (type) {
                     case Log_Type::GENERIC_SUCCESS:
                         msg = "[" + colors::SUCCESS + "SUCCESS" + colors::RESET + "] " + msg_;
@@ -328,14 +329,52 @@ namespace Gao {
 
         // we need to wait until read_line contains valid buffer space that we can read
         std::string response = gao_p.read_line();
-        if (response.empty() || response.substr(0, 2) == "-1")
+        if (response.empty() || response.substr(0, 2) == "-1") {
             throw std::runtime_error("Gaolette creation failed");
+        }
 
-
+        // response comes in the form:
+        // OK:<start_address>,<size>
+        // or
+        // ERR:<error_code>
+        if (response.substr(0, 3) == "ERR") {
+            int error_code = std::stoi(response.substr(4));
+            throw exceptions::Failed_To_Create_Gaolette(error_code);
+        } else if (response.substr(0, 2) == "OK") {
+            //parse until ,
+            size_t comma_pos = response.substr(3).find(',');
+            std::string start_address = response.substr(3, comma_pos);
+            size_t size = std::stoul(response.substr(3 + comma_pos + 1));
+            return {start_address, size, State::Operational, spec};
+        }
     }
-
-    std::string convert_to_gao_instruction(Perf_Spec perf_spec) {
-        std::string gao_instruction = "create:";
+    void fetch_state(Gaolette& gaolette, Launch& gao_p) {
+        gao_p.write_line("get:state");
+        std::string response = gao_p.read_line();
+        if (response.substr(0, 2) == "OK") {
+            int state_code = std::stoi(response.substr(3));
+            switch (state_code) {
+                case 0:
+                    gaolette.state = State::Operational;
+                    break;
+                case 1:
+                    gaolette.state = State::ShutDown;
+                    break;
+                case 2:
+                    gaolette.state = State::Locked;
+                    break;
+                case 3:
+                    gaolette.state = State::Operating;
+                    break;
+                case 4:
+                    gaolette.state = State::Illformed;
+                    break;
+                default:
+                    throw std::runtime_error("Unknown state code received from Gaolette");
+            }
+        } else {
+            throw std::runtime_error("Failed to fetch Gaolette state");
+        }
     }
 }
 
