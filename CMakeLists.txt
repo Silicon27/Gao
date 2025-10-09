@@ -4,4 +4,4 @@ project(Gao_Runtime)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(Gao_Runtime main.cpp
-                            src/impl/init_cla.cpp)
+                            src/comm.cpp)

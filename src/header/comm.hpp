@@ -8,7 +8,7 @@
 // Communications hub for interprocess transmission; hosts the main loop
 // that runs the I/O required for IPC between the wrapper and Gao.
 
-#include <cstdio>
+#include <unistd.h>
 
 template <typename T, typename U>
 struct Pair {

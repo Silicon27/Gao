@@ -1,4 +1,4 @@
-#include "src/header/init_cla.hpp"
+#include "src/header/comm.hpp"
 
 int main() {
     // Gao runtime -> main loop

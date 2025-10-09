@@ -13,6 +13,6 @@ enum class Creation_Status {
     FAIL_INIT_GAOLETTE
 };
 
-
+// void* section_memory()
 
 #endif //INIT_GAOLETTE_HPP
