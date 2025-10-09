@@ -8,6 +8,7 @@
 #include <spawn.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
+#include <csignal>
 #include <unistd.h>
 #include <cstddef>
 #include <filesystem>
@@ -260,7 +261,7 @@ namespace Gao {
         /// Constructor and initializer for Orchestrator instances and Gao processes respectively.
         ///
         /// Initializes and modifies Gao processes on launch to ensure IPC
-        explicit Orchestrator() {
+        explicit Orchestrator(bool terminate_with_parent = true) {
             int sv[2]; // socket pair
             if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
                 throw std::runtime_error("socketpair failed");
