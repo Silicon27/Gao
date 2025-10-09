@@ -1,0 +1,398 @@
+\doxysection{Gao.\+hpp}
+\hypertarget{_gao_8hpp_source}{}\label{_gao_8hpp_source}\index{includes/Gao.hpp@{includes/Gao.hpp}}
+\mbox{\hyperlink{_gao_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ Created\ by\ David\ Yang\ on\ 2025-\/09-\/16.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#ifndef\ GAO\_HPP}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#define\ GAO\_HPP}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <spawn.h>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <sys/wait.h>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <sys/socket.h>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <unistd.h>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <cstddef>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <filesystem>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <cstdlib>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespace_gao_1_1exceptions}{Gao::exceptions}}\ \{}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_gao_1_1exceptions_1_1_failed___to___create___gaolette_a0fe7fc56c4bb53f800432ba6e9a58255}{Failed\_To\_Create\_Gaolette}}\ :\ \textcolor{keyword}{public}\ std::exception\ \{}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ std::vector<std::string>\ msg\_;}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ code\ =\ -\/1;}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \textcolor{keyword}{explicit}\ \mbox{\hyperlink{class_gao_1_1exceptions_1_1_failed___to___create___gaolette_a0fe7fc56c4bb53f800432ba6e9a58255}{Failed\_To\_Create\_Gaolette}}(\textcolor{keywordtype}{int}\ code)\ :\ code(code)\ \{}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ msg\_.emplace\_back(\textcolor{stringliteral}{"{}Gaolette\ creation\ failed\ with\ error\ code:\ "{}}\ +\ std::to\_string(code));}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (code\ ==\ -\/1)\ \{}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\_.emplace\_back(\textcolor{stringliteral}{"{}Unknown\ error\ occurred\ during\ Gaolette\ creation."{}});}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (code\ ==\ 1)\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\_.emplace\_back(\textcolor{stringliteral}{"{}Invalid\ performance\ specification\ provided."{}});}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (code\ ==\ 2)\ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\_.emplace\_back(\textcolor{stringliteral}{"{}Insufficient\ system\ resources\ to\ create\ Gaolette."{}});}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (code\ ==\ 3)\ \{}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\_.emplace\_back(\textcolor{stringliteral}{"{}Permission\ denied\ to\ create\ Gaolette."{}});}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\_.emplace\_back(\textcolor{stringliteral}{"{}Unrecognized\ error\ code."{}});}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ [[nodiscard]]\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \mbox{\hyperlink{class_gao_1_1exceptions_1_1_failed___to___create___gaolette_ab061e69dbbcec74d4286e00e2271483c}{what}}()\ const\ noexcept\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ msg\_.data()-\/>c\_str();}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00049\ \ \ \ \ \};}
+\DoxyCodeLine{00050\ \}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespace_gao}{Gao}}\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{namespace\ }\mbox{\hyperlink{namespace_gao_1_1colors}{colors}}\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a0b2c76fddbd32989a23134b93f95b688}{RESET}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[0m"{}};}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a0df5d63b32a77621788cb08af7c8cc5b}{RED}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[31m"{}};}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a5257cc141699eb14a24505b9e33a3d37}{GREEN}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[32m"{}};}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a0deb1498b1606dde59ce6dcf032eed7b}{YELLOW}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[33m"{}};}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a61716b142048d448f41258b772dbee78}{BLUE}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[34m"{}};}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a25fe0a2d345452f8d0b713d452d3a7d9}{MAGENTA}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[35m"{}};}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a3a70477f726d253253273bfa0bb91c64}{CYAN}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[36m"{}};}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a05a458f26d29f9e6949a0a462cf6deb4}{BOLD}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[1m"{}};}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_ab31ccac62c039b39dc768998820822ab}{UNDERLINE}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[4m"{}};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_ab961f43edbc6f264fca91608f2a9aa1f}{BG\_RED}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[41m"{}};}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a50ff4c79125796159c9d4a8ea2e0557c}{BG\_GREEN}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[42m"{}};}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_adef4703f68d22f0e6dcfc293f91cef44}{BG\_YELLOW}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[43m"{}};}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a9c9c6e4d95b30c5618ce81b3bb9477b5}{BG\_BLUE}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[44m"{}};}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_adc1090eeeca8cb2094d555fb317dfdd2}{BG\_MAGENTA}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[45m"{}};}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_ab7ea9dc014847bd541fc6e5506e8b9e4}{BG\_CYAN}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[46m"{}};}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a8dddc8a3cae43c7ef3ef14c15e659b85}{BG\_WHITE}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[47m"{}};}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_aef6e794ab0fae3ec16a82315fa62d61a}{BG\_RESET}}\ =\ \textcolor{stringliteral}{"{}\(\backslash\)033[49m"{}};}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{inline}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a164b7cac8520aee543d43182c2bbf0a2}{ERROR}}\ =\ std::string(\textcolor{stringliteral}{"{}\(\backslash\)033[31m"{}})\ +\ \textcolor{stringliteral}{"{}\(\backslash\)033[1m"{}};}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{inline}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_af8d1f6ed34d4ea5b6af60661ad5aff2f}{SUCCESS}}\ =\ std::string(\textcolor{stringliteral}{"{}\(\backslash\)033[32m"{}})\ +\ \textcolor{stringliteral}{"{}\(\backslash\)033[1m"{}};}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{inline}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_ad46b3ed8d0baa96cd16e34680f863f48}{WARNING}}\ =\ std::string(\textcolor{stringliteral}{"{}\(\backslash\)033[33m"{}})\ +\ \textcolor{stringliteral}{"{}\(\backslash\)033[1m"{}};}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{inline}\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{namespace_gao_1_1colors_a19ff6665f6176326a09a8e12f03cc45c}{NOTICE}}\ =\ std::string(\textcolor{stringliteral}{"{}\(\backslash\)033[34m"{}})\ +\ \textcolor{stringliteral}{"{}\(\backslash\)033[1m"{}};}
+\DoxyCodeLine{00078\ \ \ \ \ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keyword}{enum\ class}\ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4}{State}}\ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4a431accab7897f05b0424e002ca30391d}{Operational}},\ }
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4a22981224d4ae3725235016230b969179}{ShutDown}},\ }
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4ad0f2e5376298c880665077b565ffd7dd}{Locked}},\ }
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4a973969af72d3b5094d5b1598949375e4}{Operating}},\ }
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4adec288cea8ac36a99a61ce99462bd85a}{Illformed}}\ }
+\DoxyCodeLine{00091\ \ \ \ \ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{//\ I\ kept\ the\ State::Operating\ to\ write/read\ in}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{//\ case\ the\ code\ operating\ in\ the\ Gaolette\ requires\ I/O}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keyword}{enum\ class}\ \mbox{\hyperlink{namespace_gao_a13570c6c086a3f6329d8d93331e64b88}{Memory\_Policy}}\ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ defines\ contraction/expansion\ policies\ of\ the\ Gaolette's\ memory}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_a13570c6c086a3f6329d8d93331e64b88afe6f99ef1ec99efbdc19a9786cf1facc}{STATIC}},\ \ \ \ }
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_a13570c6c086a3f6329d8d93331e64b88a0fcc90da4811c877ba9f9c12f7d60bc9}{DYNAMIC}}\ \ \ \ }
+\DoxyCodeLine{00102\ \ \ \ \ \};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_gao_1_1_perf___spec}{Perf\_Spec}}\ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ basic\ performance\ specification}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_gao_1_1_perf___spec_aea364867ae6d9edea304f291816cc720}{size\_}};\ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_a13570c6c086a3f6329d8d93331e64b88}{Memory\_Policy}}\ \mbox{\hyperlink{struct_gao_1_1_perf___spec_ab9618651abd6f3662ec2ac09d423026d}{memory\_policy\_}};}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_gao_1_1_perf___spec_afbac1f8d0edc59b26f627a8150df088a}{max\_memory\_usage\_}};\ \ \ \ }
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_gao_1_1_perf___spec_a07d3bdf9fb3608017e20da8b822ff30a}{max\_cpu\_cores\_}};}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ extended\ process/resource\ limits}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*std::size\_t\ max\_open\_files\_;}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::size\_t\ max\_threads\_;}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::size\_t\ max\_stack\_size\_;}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::size\_t\ max\_runtime\_ms\_;}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::size\_t\ max\_cpu\_time\_ms\_;}}
+\DoxyCodeLine{00121\ \textcolor{comment}{}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ \ \ \ \ \ \ \ //\ security\ \&\ isolation}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ \ \ \ \ \ \ \ bool\ allow\_network\_;}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ \ \ \ \ \ \ \ bool\ allow\_filesystem\_;}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ \ \ \ \ \ \ \ bool\ restrict\_privileges\_;}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::vector<std::string>\ allowed\_syscalls\_;}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::vector<std::string>\ allowed\_env\_vars\_;}}
+\DoxyCodeLine{00128\ \textcolor{comment}{}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ \ \ \ \ \ \ \ //\ scheduling\ \&\ priorities}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ \ \ \ \ \ int\ cpu\_priority\_;}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ \ \ \ \ \ \ \ int\ io\_priority\_;}}
+\DoxyCodeLine{00132\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::vector<int>\ cpu\_affinity\_;}}
+\DoxyCodeLine{00133\ \textcolor{comment}{}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ \ \ \ \ \ //\ sandboxing\ features}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::string\ chroot\_dir\_;}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ \ \ \ \ \ std::vector<std::string>\ allowed\_mounts\_;}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ \ \ \ \ \ \ \ bool\ enable\_seccomp\_;}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ \ \ \ \ \ \ \ bool\ enable\_cgroups\_;*/}}
+\DoxyCodeLine{00139\ \ \ \ \ \};}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keyword}{using\ }\mbox{\hyperlink{namespace_gao_ad963e57a23498f1112d7f7f096061dd3}{gaolette\_id\_t}}\ =\ \textcolor{keywordtype}{unsigned}\ int;}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_gao_1_1_gaolette}{Gaolette}}\ \{}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_ad963e57a23498f1112d7f7f096061dd3}{gaolette\_id\_t}}\ \mbox{\hyperlink{struct_gao_1_1_gaolette_acb5cd85bf237414efd84f50fd2a27884}{id}};}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4}{State}}\ \mbox{\hyperlink{struct_gao_1_1_gaolette_a199decb2e2f4be2b31f59db2e0fccd8a}{state}};}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_gao_1_1_perf___spec}{Perf\_Spec}}\ \mbox{\hyperlink{struct_gao_1_1_gaolette_afffbf5c22cad8834543465122181e16b}{perf\_spec}};}
+\DoxyCodeLine{00152\ \ \ \ \ \};}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ **\mbox{\hyperlink{namespace_gao_a712df1224a7f6baeb00b7dea4ee2ec49}{environ}};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_gao_1_1_launch_a1e05dfa782be80afababc1fea9db5b86}{Launch}}\ \{}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ pid\_t\ pid\_\ =\ 0;}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ status\_\ =\ 0;}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arch\_;}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ posix\_spawn\_file\_actions\_t\ actions\_;}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ socket\_;}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ logging\_\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::filesystem::path\ get\_gao\_binary()\ \{}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#if\ defined(\_\_x86\_64\_\_)}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ arch\_\ =\ \textcolor{stringliteral}{"{}x86\_64"{}};}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::string(std::getenv(\textcolor{stringliteral}{"{}GAO\_BIN\_DIR"{}}))\ +\ std::string(\textcolor{stringliteral}{"{}/x86\_64"{}});}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\#elif\ defined(\_\_i386\_\_)}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ arch\_\ =\ \textcolor{stringliteral}{"{}i386"{}};}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::string(std::getenv(\textcolor{stringliteral}{"{}GAO\_BIN\_DIR"{}}))\ +\ std::string(\textcolor{stringliteral}{"{}/i386"{}});}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#elif\ defined(\_\_arm\_\_)}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ arch\_\ =\ \textcolor{stringliteral}{"{}arm"{}};}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{std::getenv(\textcolor{stringliteral}{"{}GAO\_BIN\_DIR"{}})\ +\ std::string(\textcolor{stringliteral}{"{}/arm"{}})\};}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\#elif\ defined(\_\_aarch64\_\_)}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ arch\_\ =\ \textcolor{stringliteral}{"{}aarch64"{}};}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{std::getenv(\textcolor{stringliteral}{"{}GAO\_BIN\_DIR"{}})\ +\ std::string(\textcolor{stringliteral}{"{}/aarch64"{}})\};}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NOTICE\ improve\ logging,\ its\ so\ ass\ rn}}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ Log\_Type\ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ GENERIC\_SUCCESS,}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ GENERIC\_FAILURE,}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ GENERIC\_NOTICE,}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ GENERIC\_WARNING,}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ Log\_Prio\ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ ONLY\_IF\_LOGGING,\ }
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ ANY\ }
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }Log\ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ msg;}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ time;}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ Log\_Type\ type;}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ Log\_Prio\ prio;}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{explicit}\ Log(\textcolor{keyword}{const}\ Log\_Type\ type,\ \textcolor{keyword}{const}\ std::string\&\ msg\_,\ \textcolor{keyword}{const}\ Log\_Prio\ p)\ :\ msg(msg\_),\ type(type),\ prio(p)\ \{}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (type)\ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Log\_Type::GENERIC\_SUCCESS:}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\ =\ \textcolor{stringliteral}{"{}["{}}\ +\ \mbox{\hyperlink{namespace_gao_1_1colors_af8d1f6ed34d4ea5b6af60661ad5aff2f}{colors::SUCCESS}}\ +\ \textcolor{stringliteral}{"{}SUCCESS"{}}\ +\ \mbox{\hyperlink{namespace_gao_1_1colors_a0b2c76fddbd32989a23134b93f95b688}{colors::RESET}}\ +\ \textcolor{stringliteral}{"{}]\ "{}}\ +\ msg\_;}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Log\_Type::GENERIC\_FAILURE:}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\ =\ \textcolor{stringliteral}{"{}["{}}\ +\ \mbox{\hyperlink{namespace_gao_1_1colors_a164b7cac8520aee543d43182c2bbf0a2}{colors::ERROR}}\ +\ \textcolor{stringliteral}{"{}FAILURE"{}}\ +\ \mbox{\hyperlink{namespace_gao_1_1colors_a0b2c76fddbd32989a23134b93f95b688}{colors::RESET}}\ +\ \textcolor{stringliteral}{"{}]\ "{}}\ +\ msg\_;}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Log\_Type::GENERIC\_NOTICE:}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\ =\ \textcolor{stringliteral}{"{}["{}}\ +\ \mbox{\hyperlink{namespace_gao_1_1colors_a19ff6665f6176326a09a8e12f03cc45c}{colors::NOTICE}}\ +\ \textcolor{stringliteral}{"{}NOTICE"{}}\ +\ \mbox{\hyperlink{namespace_gao_1_1colors_a0b2c76fddbd32989a23134b93f95b688}{colors::RESET}}\ +\ \textcolor{stringliteral}{"{}]\ "{}}\ +\ msg\_;}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ Log\_Type::GENERIC\_WARNING:}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg\ =\ \textcolor{stringliteral}{"{}["{}}\ +\ \mbox{\hyperlink{namespace_gao_1_1colors_ad46b3ed8d0baa96cd16e34680f863f48}{colors::WARNING}}\ +\ \textcolor{stringliteral}{"{}WARNING"{}}\ +\ \mbox{\hyperlink{namespace_gao_1_1colors_a0b2c76fddbd32989a23134b93f95b688}{colors::RESET}}\ +\ \textcolor{stringliteral}{"{}]\ "{}}\ +\ msg\_;}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ std::vector<Log>\ logs\_;}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ log(\textcolor{keyword}{const}\ Log\&\ log)\ \{}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ logs\_.emplace\_back(log);}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ dump\_logs(\textcolor{keywordtype}{bool}\ clear\ =\ \textcolor{keyword}{true})\ \{}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ log\ :\ logs\_)\ \{}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (log.prio\ ==\ Log\_Prio::ANY)\ \{}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ log.msg\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (log.prio\ ==\ Log\_Prio::ONLY\_IF\_LOGGING\ \&\&\ logging\_)\ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ log.msg\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (clear)\ \{}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logs\_.clear();}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ print\_log(\textcolor{keywordtype}{bool}\ clear\ =\ \textcolor{keyword}{true})\ \{}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (logs\_[0].prio\ ==\ Log\_Prio::ANY)\ \{}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ logs\_[0].msg\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (logs\_[0].prio\ ==\ Log\_Prio::ONLY\_IF\_LOGGING\ \&\&\ logging\_)\ \{}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ logs\_[0].msg\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (clear)\ \{}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ erase\ logs\_[0]}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logs\_.erase(logs\_.begin());}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \textcolor{keyword}{explicit}\ \mbox{\hyperlink{class_gao_1_1_launch_a1e05dfa782be80afababc1fea9db5b86}{Launch}}()\ \{}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ sv[2];\ \textcolor{comment}{//\ socket\ pair}}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (socketpair(AF\_UNIX,\ SOCK\_STREAM,\ 0,\ sv)\ ==\ -\/1)\ \{}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}socketpair\ failed"{}});}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ posix\_spawn\_file\_actions\_init(\&actions\_);}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ duplicate\ the\ child's\ socket\ to\ stdin/stdout}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ posix\_spawn\_file\_actions\_adddup2(\&actions\_,\ sv[1],\ STDIN\_FILENO);}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ posix\_spawn\_file\_actions\_adddup2(\&actions\_,\ sv[1],\ STDOUT\_FILENO);}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ status\_\ =\ posix\_spawn(\&pid\_,\ get\_gao\_binary().c\_str(),}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&actions\_,\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr},\ \mbox{\hyperlink{namespace_gao_a712df1224a7f6baeb00b7dea4ee2ec49}{environ}});}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (status\_\ !=\ 0)\ \{}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}posix\_spawn\ failed"{}});}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ socket\_\ =\ sv[0];}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ we\ can\ now\ close\ the\ child's\ end\ on\ the\ parent\ as\ it\ only\ needs\ it's\ end\ of\ the\ socket}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ close(sv[1]);}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_gao_1_1_launch_a86d4b3af9a9e368aa7a16858253dd5e2}{\string~Launch}}()\ \{}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ posix\_spawn\_file\_actions\_destroy(\&actions\_);}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (socket\_\ !=\ -\/1)\ \{}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ close(socket\_);}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pid\_\ >\ 0)\ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (waitpid(pid\_,\ \&status\_,\ 0)\ >\ 0)\ \{}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (WIFEXITED(status\_))\ \{}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ \textcolor{stringliteral}{"{}Exited\ with\ status\ "{}}\ <<\ WEXITSTATUS(status\_)\ <<\ std::endl;}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (WIFSIGNALED(status\_))\ \{}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ \textcolor{stringliteral}{"{}Killed\ by\ signal\ "{}}\ <<\ WTERMSIG(status\_)\ <<\ std::endl;}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cout\ <<\ \textcolor{stringliteral}{"{}Exited\ with\ unknown\ status"{}}\ <<\ std::endl;}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ [[nodiscard]]\ std::string\ \mbox{\hyperlink{class_gao_1_1_launch_a8e3ba371c72075ace879d79b0b57634b}{read\_line}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{size\_t}\ BUF\_SIZE\ =\ 1024;}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}*\ buf\ =\ \textcolor{keyword}{new}\ \textcolor{keywordtype}{char}[BUF\_SIZE];\ \ \textcolor{comment}{//\ caller\ must\ delete[]}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ len\ =\ 0;}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (\textcolor{keyword}{true})\ \{}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ssize\_t\ nread\ =\ ::read(socket\_,\ buf\ +\ len,\ BUF\_SIZE\ -\/\ len\ -\/\ 1);}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nread\ ==\ -\/1)\ \{}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}[]\ buf;}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}read\ failed"{}});}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nread\ ==\ 0)\ \{\ \ \textcolor{comment}{//\ EOF}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ len\ +=\ nread;}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ stop\ if\ newline\ is\ seen}}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (buf[len\ -\/\ 1]\ ==\ \textcolor{charliteral}{'\(\backslash\)n'})\ \{}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buf[len\ -\/\ 1]\ =\ \textcolor{charliteral}{'\(\backslash\)0'};}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ temp\ =\ buf;}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}[]\ buf;}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ temp;}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ safety:\ stop\ if\ buffer\ full\ (no\ newline)}}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (len\ >=\ BUF\_SIZE\ -\/\ 1)\ \{}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buf[len]\ =\ \textcolor{charliteral}{'\(\backslash\)0'};}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ temp\ =\ buf;}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}[]\ buf;}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ temp;}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ no\ newline\ before\ EOF}}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ buf[len]\ =\ \textcolor{charliteral}{'\(\backslash\)0'};}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ temp\ =\ buf;}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}[]\ buf;}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ temp;}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_gao_1_1_launch_a5e588e99608f22a36bab177e48a7e707}{write\_line}}(\textcolor{keyword}{const}\ std::string\&\ line)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(write(socket\_,\ (line\ +\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}}).c\_str(),\ strlen(line.c\_str())));}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00351\ \ \ \ \ \};}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00354\ \ \ \ \ \textcolor{keyword}{inline}\ \mbox{\hyperlink{struct_gao_1_1_gaolette}{Gaolette}}\ \mbox{\hyperlink{namespace_gao_ae57f0b0571a9ff99ee52d28e8bb410fe}{create\_gaolette}}(\mbox{\hyperlink{struct_gao_1_1_perf___spec}{Perf\_Spec}}\ spec,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_gao_1_1_launch}{Launch}}\&\ gao\_p)\ \{}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ std::string\ gao\_instruction\ =\ \textcolor{stringliteral}{"{}crt:"{}};}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ gao\_instruction.append(std::to\_string(spec.\mbox{\hyperlink{struct_gao_1_1_perf___spec_aea364867ae6d9edea304f291816cc720}{size\_}})\ +\ \textcolor{stringliteral}{"{},"{}});}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ gao\_instruction.append(std::to\_string(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(spec.\mbox{\hyperlink{struct_gao_1_1_perf___spec_ab9618651abd6f3662ec2ac09d423026d}{memory\_policy\_}}))\ +\ \textcolor{stringliteral}{"{},"{}});}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ gao\_instruction.append(std::to\_string(spec.\mbox{\hyperlink{struct_gao_1_1_perf___spec_afbac1f8d0edc59b26f627a8150df088a}{max\_memory\_usage\_}})\ +\ \textcolor{stringliteral}{"{},"{}});}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ gao\_instruction.append(std::to\_string(spec.\mbox{\hyperlink{struct_gao_1_1_perf___spec_a07d3bdf9fb3608017e20da8b822ff30a}{max\_cpu\_cores\_}}));}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ gao\_p.\mbox{\hyperlink{class_gao_1_1_launch_a5e588e99608f22a36bab177e48a7e707}{write\_line}}(gao\_instruction);\ \ \textcolor{comment}{//\ NOLINT}}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ we\ need\ to\ wait\ until\ read\_line\ contains\ valid\ buffer\ space\ that\ we\ can\ read}}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ response\ =\ gao\_p.\mbox{\hyperlink{class_gao_1_1_launch_a8e3ba371c72075ace879d79b0b57634b}{read\_line}}();}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (response.empty()\ ||\ response.substr(0,\ 2)\ ==\ \textcolor{stringliteral}{"{}-\/1"{}})\ \{}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Gaolette\ creation\ failed"{}});}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ response\ comes\ in\ the\ form:}}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ OK:<gaolette\_id\_t>}}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ or}}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ ERR:<error\_code>}}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (response.substr(0,\ 3)\ ==\ \textcolor{stringliteral}{"{}ERR"{}})\ \{}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ error\_code\ =\ std::stoi(response.substr(4));}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \mbox{\hyperlink{class_gao_1_1exceptions_1_1_failed___to___create___gaolette}{exceptions::Failed\_To\_Create\_Gaolette}}(error\_code);}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (response.substr(0,\ 2)\ ==\ \textcolor{stringliteral}{"{}OK"{}})\ \{}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//parse\ until\ ,}}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespace_gao_ad963e57a23498f1112d7f7f096061dd3}{gaolette\_id\_t}}\ \textcolor{keywordtype}{id}\ =\ std::stoi(response.substr(3));}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_gao_1_1_gaolette}{Gaolette}}\{id,\ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4a431accab7897f05b0424e002ca30391d}{State::Operational}},\ spec\};}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Invalid\ response\ from\ Gaolette\ creation"{}});}
+\DoxyCodeLine{00385\ \ \ \ \ \}}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00388\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{namespace_gao_af9019e6835dd30737bbad5abe13403bd}{destroy\_gaolette}}(\mbox{\hyperlink{struct_gao_1_1_gaolette}{Gaolette}}\&\ gaolette,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_gao_1_1_launch}{Launch}}\&\ gao\_p)\ \{}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ std::string\ gao\_instruction\ =\ \textcolor{stringliteral}{"{}del:"{}};}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ gao\_instruction.append(std::to\_string(gaolette.\mbox{\hyperlink{struct_gao_1_1_gaolette_acb5cd85bf237414efd84f50fd2a27884}{id}}));}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ gao\_p.\mbox{\hyperlink{class_gao_1_1_launch_a5e588e99608f22a36bab177e48a7e707}{write\_line}}(gao\_instruction);}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ std::string\ response\ =\ gao\_p.\mbox{\hyperlink{class_gao_1_1_launch_a8e3ba371c72075ace879d79b0b57634b}{read\_line}}();}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (response.substr(0,\ 2)\ ==\ \textcolor{stringliteral}{"{}OK"{}})\ \{}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;\ \textcolor{comment}{//\ success}}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;\ \textcolor{comment}{//\ failure}}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00398\ \ \ \ \ \}}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00401\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{namespace_gao_a96c5213d6937e498bf91562cd14808a0}{fetch\_state}}(\mbox{\hyperlink{struct_gao_1_1_gaolette}{Gaolette}}\&\ gaolette,\ \mbox{\hyperlink{class_gao_1_1_launch}{Launch}}\&\ gao\_p)\ \{}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ gao\_p.\mbox{\hyperlink{class_gao_1_1_launch_a5e588e99608f22a36bab177e48a7e707}{write\_line}}(std::string(\textcolor{stringliteral}{"{}get:state"{}}));}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ std::string\ response\ =\ gao\_p.\mbox{\hyperlink{class_gao_1_1_launch_a8e3ba371c72075ace879d79b0b57634b}{read\_line}}();}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (response.substr(0,\ 2)\ ==\ \textcolor{stringliteral}{"{}OK"{}})\ \{}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ state\_code\ =\ std::stoi(response.substr(3));}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (state\_code)\ \{}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ 0:}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gaolette.\mbox{\hyperlink{struct_gao_1_1_gaolette_a199decb2e2f4be2b31f59db2e0fccd8a}{state}}\ =\ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4a431accab7897f05b0424e002ca30391d}{State::Operational}};}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ 1:}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gaolette.\mbox{\hyperlink{struct_gao_1_1_gaolette_a199decb2e2f4be2b31f59db2e0fccd8a}{state}}\ =\ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4a22981224d4ae3725235016230b969179}{State::ShutDown}};}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ 2:}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gaolette.\mbox{\hyperlink{struct_gao_1_1_gaolette_a199decb2e2f4be2b31f59db2e0fccd8a}{state}}\ =\ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4ad0f2e5376298c880665077b565ffd7dd}{State::Locked}};}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ 3:}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gaolette.\mbox{\hyperlink{struct_gao_1_1_gaolette_a199decb2e2f4be2b31f59db2e0fccd8a}{state}}\ =\ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4a973969af72d3b5094d5b1598949375e4}{State::Operating}};}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ 4:}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gaolette.\mbox{\hyperlink{struct_gao_1_1_gaolette_a199decb2e2f4be2b31f59db2e0fccd8a}{state}}\ =\ \mbox{\hyperlink{namespace_gao_aaf219e3969802c3364dd890e56b473d4adec288cea8ac36a99a61ce99462bd85a}{State::Illformed}};}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Unknown\ state\ code\ received\ from\ Gaolette"{}});}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ fetch\ Gaolette\ state"{}});}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00428\ \ \ \ \ \}}
+\DoxyCodeLine{00429\ \}}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//GAO\_HPP}}
+
+\end{DoxyCode}

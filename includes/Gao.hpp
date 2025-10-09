@@ -18,6 +18,12 @@
 #include <stdexcept>
 
 namespace Gao::exceptions {
+    ///
+    /// @class Failed_To_Create_Gaolette
+    /// @brief Exception thrown with added context based off code.
+    ///
+    /// Gaolette creation may result in failure, in such cases this exception handles
+    /// all known error codes with added context based off the code.
     class Failed_To_Create_Gaolette : public std::exception {
         std::vector<std::string> msg_;
         int code = -1;
@@ -71,28 +77,39 @@ namespace Gao {
         constexpr inline auto NOTICE = std::string("\033[34m") + "\033[1m";
     }
 
+    /// @enum State
+    /// @brief Possible states a Gaolette may present itself.
+    ///
+    /// Allows Gao to restrict and place constraints on what the user may
+    /// do to a Gaolette at any given time.
     enum class State {
-        Operational, // the Gaolette is open for read/write
-        ShutDown, // the Gaolette is closed for read/write
-        Locked, // the Gaolette is locked and is read-only
-        Operating, // the Gaolette is running code and is open for read/write for console
-        Illformed // the Gaolette is ill-formed and cannot be used
+        Operational, ///< the Gaolette is open for read/write
+        ShutDown, ///< the Gaolette is closed for read/write
+        Locked, ///< the Gaolette is locked and is read-only
+        Operating, ///< the Gaolette is running code and is open for read/write for console
+        Illformed ///< the Gaolette is ill-formed and cannot be used
     };
 
-    // I kept the State::Operating to write and read for console in case the code operating in the Gaolette
-    // requires I/O
+    // I kept the State::Operating to write/read in
+    // case the code operating in the Gaolette requires I/O
 
+    /// @enum Memory_Policy
+    /// @brief Specifies ability for Gaolette to expand/contract when needed
     enum class Memory_Policy {
-        // defines contraction/expansion policies of the sandbox memory
-        STATIC,    // fixed size, no contraction/expansion
-        DYNAMIC    // allow contraction/expansion within limits
+        // defines contraction/expansion policies of the Gaolette's memory
+        STATIC,    ///< fixed size, no contraction/expansion
+        DYNAMIC    ///< allow contraction/expansion within limits
     };
 
+    /// @struct Perf_Spec
+    /// @brief Performance Specification for Gaolette instance.
+    ///
+    /// Specifies constraints for the Gaolette instance if needed.
     struct Perf_Spec {
         // basic performance specification
-        std::size_t size_;           // total memory delegated to the sandbox in bytes
+        std::size_t size_;           ///< total memory delegated to the sandbox in bytes
         Memory_Policy memory_policy_;
-        std::size_t max_memory_usage_;    // in bytes
+        std::size_t max_memory_usage_;    ///< in bytes
         std::size_t max_cpu_cores_;
 
         // extended process/resource limits
@@ -121,17 +138,25 @@ namespace Gao {
         bool enable_cgroups_;*/
     };
 
+    /// Gaolette ID type used to reference some Gaolette.
+    using gaolette_id_t = unsigned int;
+
+    /// @struct Gaolette
+    /// @brief Gaolette instance
+    ///
+    /// Represents a Gaolette instance.
     struct Gaolette {
-        std::string start; // start address of the Gaolette memory space
-        size_t size;
+        gaolette_id_t id;
         State state;
         Perf_Spec perf_spec;
     };
 
     extern char **environ;
 
-    /// Launch is, well if I were to define it, the API gateway at the base
-    /// that connects Gao to the wrapper
+    /// @class Launch
+    /// @brief Low-level controller for a Gao process, aka the gateway API that links Gao processes to the Gao API.
+    ///
+    /// Base of all base.
     class Launch {
         pid_t pid_ = 0;
         int status_ = 0;
@@ -166,9 +191,10 @@ namespace Gao {
 
         };
 
+        /// Log priority, specifies whether a log is to be printed regardless of the logging_ member
         enum class Log_Prio {
-            ONLY_IF_LOGGING,
-            ANY
+            ONLY_IF_LOGGING, /// only if logging_ is true
+            ANY /// will always be printed if dump_logs/print_log is invoked
         };
 
         struct Log {
@@ -197,12 +223,12 @@ namespace Gao {
 
         std::vector<Log> logs_;
 
+        /// Add to logs_ regardless of logging_ because of Log_Prio
         void log(const Log& log) {
-            if (logging_) {
-                logs_.emplace_back(log);
-            }
+            logs_.emplace_back(log);
         }
 
+        /// Dumps all logs in logs_
         void dump_logs(bool clear = true) {
             for (const auto& log : logs_) {
                 if (log.prio == Log_Prio::ANY) {
@@ -216,6 +242,7 @@ namespace Gao {
             }
         }
 
+        //// Prints oldest log in logs_
         void print_log(bool clear = true) {
             if (logs_[0].prio == Log_Prio::ANY) {
                 std::cout << logs_[0].msg << "\n";
@@ -230,6 +257,9 @@ namespace Gao {
 
 
     public:
+        /// Constructor and initializer for Launch instances and Gao processes respectively.
+        ///
+        /// Initializes and modifies Gao processes on launch to ensure IPC
         explicit Launch() {
             int sv[2]; // socket pair
             if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
@@ -254,6 +284,7 @@ namespace Gao {
             close(sv[1]);
         }
 
+        /// Destructor for Launch instances and Gao processes.
         ~Launch() {
             posix_spawn_file_actions_destroy(&actions_);
             if (socket_ != -1) {
@@ -272,6 +303,7 @@ namespace Gao {
             }
         }
 
+        /// reads from socket_ into a buffer until either the buffer is maxed out or it hits a newline.
         [[nodiscard]] std::string read_line() const {
             constexpr size_t BUF_SIZE = 1024;
             char* buf = new char[BUF_SIZE];  // caller must delete[]
@@ -311,45 +343,63 @@ namespace Gao {
             delete[] buf;
             return temp;
         }
-
-        int write_line(const char* line) const {
-            return static_cast<int>(write(socket_, line, strlen(line)));
+        
+        /// writes a line to the Gao process via writing to socket_.
+        int write_line(const std::string& line) const {
+            return static_cast<int>(write(socket_, (line + "\n").c_str(), strlen(line.c_str())));
         }
     };
 
-
-    Gaolette create_gaolette(Perf_Spec spec,  Launch& gao_p) {
+    /// Creates a Gaolette on the Gao process held by the gao_p Launch instance.
+    inline Gaolette create_gaolette(Perf_Spec spec, const Launch& gao_p) {
         std::string gao_instruction = "crt:";
         gao_instruction.append(std::to_string(spec.size_) + ",");
         gao_instruction.append(std::to_string(static_cast<int>(spec.memory_policy_)) + ",");
         gao_instruction.append(std::to_string(spec.max_memory_usage_) + ",");
         gao_instruction.append(std::to_string(spec.max_cpu_cores_));
 
-        gao_p.write_line(gao_instruction.c_str());
+        gao_p.write_line(gao_instruction);  // NOLINT
 
         // we need to wait until read_line contains valid buffer space that we can read
-        std::string response = gao_p.read_line();
+        const std::string response = gao_p.read_line();
         if (response.empty() || response.substr(0, 2) == "-1") {
             throw std::runtime_error("Gaolette creation failed");
         }
 
         // response comes in the form:
-        // OK:<start_address>,<size>
+        // OK:<gaolette_id_t>
         // or
         // ERR:<error_code>
         if (response.substr(0, 3) == "ERR") {
             int error_code = std::stoi(response.substr(4));
             throw exceptions::Failed_To_Create_Gaolette(error_code);
-        } else if (response.substr(0, 2) == "OK") {
+        }
+
+        if (response.substr(0, 2) == "OK") {
             //parse until ,
-            size_t comma_pos = response.substr(3).find(',');
-            std::string start_address = response.substr(3, comma_pos);
-            size_t size = std::stoul(response.substr(3 + comma_pos + 1));
-            return {start_address, size, State::Operational, spec};
+            gaolette_id_t id = std::stoi(response.substr(3));
+            return Gaolette{id, State::Operational, spec};
+        }
+
+        throw std::runtime_error("Invalid response from Gaolette creation");
+    }
+
+    /// Destroys a Gaolette held by the gao_p Launch instance.
+    inline int destroy_gaolette(Gaolette& gaolette, const Launch& gao_p) {
+        std::string gao_instruction = "del:";
+        gao_instruction.append(std::to_string(gaolette.id));
+        gao_p.write_line(gao_instruction);
+        std::string response = gao_p.read_line();
+        if (response.substr(0, 2) == "OK") {
+            return 0; // success
+        } else {
+            return -1; // failure
         }
     }
-    void fetch_state(Gaolette& gaolette, Launch& gao_p) {
-        gao_p.write_line("get:state");
+
+    /// Updates state of Gaolette instance held by gao_p Launch instance.
+    inline void fetch_state(Gaolette& gaolette, Launch& gao_p) {
+        gao_p.write_line(std::string("get:state"));
         std::string response = gao_p.read_line();
         if (response.substr(0, 2) == "OK") {
             int state_code = std::stoi(response.substr(3));
