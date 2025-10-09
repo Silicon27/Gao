@@ -24,16 +24,18 @@ void operator delete[](void* ptr, const nothrow_t&) noexcept {
 }
 
 template <typename T, typename U>
-Pair<T, U> make_pair(T first, U second) noexcept {
+Pair<T, U> make_pair(T first, U second) {
     return Pair<T, U>{first, second};
 }
 
-Comm_Status Comm::get_status() {
+Comm_Status Comm::get_status() noexcept {
     return status;
 }
 
-void Comm::set_status(Comm_Status status) {
-    this->status = status;
+void Comm::set_status(Comm_Status status) noexcept {
+    if (status == Comm_Status::Active || status == Comm_Status::Passive) {
+        this->status = status;
+    }
 }
 
 [[nodiscard]] Pair<char*, ssize_t> Comm::read_line() noexcept {

@@ -34,8 +34,10 @@ struct Pair {
     Pair() : first(), second() {}
 };
 
+// T or U may have move/copy constructors that throw,
+// so we don't mark as noexcept and try-catch in case of possible exception
 template <typename T, typename U>
-Pair<T, U> make_pair(T first, U second) noexcept;
+Pair<T, U> make_pair(T first, U second);
 
 enum class Comm_Status {
     Active,  // actively transmits all thats transferable
@@ -49,8 +51,8 @@ class Comm {
     Comm_Status status = Comm_Status::Passive;
 
 public:
-    Comm_Status get_status();
-    void set_status(Comm_Status status);
+    Comm_Status get_status() noexcept;
+    void set_status(Comm_Status status) noexcept;
 
     static Pair<char*, ssize_t> read_line() noexcept;
 

@@ -153,11 +153,11 @@ namespace Gao {
 
     extern char **environ;
 
-    /// @class Launch
+    /// @class Orchestrator
     /// @brief Low-level controller for a Gao process, aka the gateway API that links Gao processes to the Gao API.
     ///
     /// Base of all base.
-    class Launch {
+    class Orchestrator {
         pid_t pid_ = 0;
         int status_ = 0;
         static const char* arch_;
@@ -257,10 +257,10 @@ namespace Gao {
 
 
     public:
-        /// Constructor and initializer for Launch instances and Gao processes respectively.
+        /// Constructor and initializer for Orchestrator instances and Gao processes respectively.
         ///
         /// Initializes and modifies Gao processes on launch to ensure IPC
-        explicit Launch() {
+        explicit Orchestrator() {
             int sv[2]; // socket pair
             if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
                 throw std::runtime_error("socketpair failed");
@@ -284,8 +284,8 @@ namespace Gao {
             close(sv[1]);
         }
 
-        /// Destructor for Launch instances and Gao processes.
-        ~Launch() {
+        /// Destructor for Orchestrator instances and Gao processes.
+        ~Orchestrator() {
             posix_spawn_file_actions_destroy(&actions_);
             if (socket_ != -1) {
                 close(socket_);
@@ -350,8 +350,8 @@ namespace Gao {
         }
     };
 
-    /// Creates a Gaolette on the Gao process held by the gao_p Launch instance.
-    inline Gaolette create_gaolette(Perf_Spec spec, const Launch& gao_p) {
+    /// Creates a Gaolette on the Gao process held by the gao_p Orchestrator instance.
+    inline Gaolette create_gaolette(Perf_Spec spec, const Orchestrator& gao_p) {
         std::string gao_instruction = "crt:";
         gao_instruction.append(std::to_string(spec.size_) + ",");
         gao_instruction.append(std::to_string(static_cast<int>(spec.memory_policy_)) + ",");
@@ -384,8 +384,8 @@ namespace Gao {
         throw std::runtime_error("Invalid response from Gaolette creation");
     }
 
-    /// Destroys a Gaolette held by the gao_p Launch instance.
-    inline int destroy_gaolette(Gaolette& gaolette, const Launch& gao_p) {
+    /// Destroys a Gaolette held by the gao_p Orchestrator instance.
+    inline int destroy_gaolette(Gaolette& gaolette, const Orchestrator& gao_p) {
         std::string gao_instruction = "del:";
         gao_instruction.append(std::to_string(gaolette.id));
         gao_p.write_line(gao_instruction);
@@ -397,8 +397,8 @@ namespace Gao {
         }
     }
 
-    /// Updates state of Gaolette instance held by gao_p Launch instance.
-    inline void fetch_state(Gaolette& gaolette, Launch& gao_p) {
+    /// Updates state of Gaolette instance held by gao_p Orchestrator instance.
+    inline void fetch_state(Gaolette& gaolette, Orchestrator& gao_p) {
         gao_p.write_line(std::string("get:state"));
         std::string response = gao_p.read_line();
         if (response.substr(0, 2) == "OK") {
