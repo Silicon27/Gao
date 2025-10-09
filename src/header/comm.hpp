@@ -35,9 +35,7 @@ struct Pair {
 };
 
 template <typename T, typename U>
-Pair<T, U> make_pair(T first, U second) {
-    return {first, second};
-}
+Pair<T, U> make_pair(T first, U second) noexcept;
 
 enum class Comm_Status {
     Active,  // actively transmits all thats transferable
@@ -53,8 +51,10 @@ class Comm {
 public:
     Comm_Status get_status();
     void set_status(Comm_Status status);
-    Pair<char*, ssize_t> read_line();
-    int write_line(const char* line);
+
+    static Pair<char*, ssize_t> read_line() noexcept;
+
+    static int write_line(const char* line) noexcept;
 };
 
 #endif // COMM_HPP
