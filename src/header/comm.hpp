@@ -9,6 +9,18 @@
 // that runs the I/O required for IPC between the wrapper and Gao.
 
 #include <unistd.h>
+#include <stddef.h>
+
+struct nothrow_t {
+    explicit nothrow_t() = default;
+};
+
+inline constexpr nothrow_t nothrow{};
+
+void* operator new(size_t size, nothrow_t const&) noexcept;
+void* operator new[](size_t size, nothrow_t const&) noexcept;
+void operator delete(void* ptr, const nothrow_t&) noexcept;
+void operator delete[](void* ptr, const nothrow_t&) noexcept;
 
 template <typename T, typename U>
 struct Pair {

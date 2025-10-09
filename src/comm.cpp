@@ -4,6 +4,24 @@
 
 #include "header/comm.hpp"
 
+#include <cstdlib>
+
+void* operator new(size_t size, nothrow_t const&) noexcept {
+    return ::malloc(size);
+}
+
+void* operator new[](size_t size, nothrow_t const&) noexcept {
+    return ::malloc(size);
+}
+
+void operator delete(void* ptr, const nothrow_t&) noexcept {
+    free(ptr);
+}
+
+void operator delete[](void* ptr, const nothrow_t&) noexcept {
+    free(ptr);
+}
+
 Comm_Status Comm::get_status() {
     return status;
 }
@@ -12,7 +30,7 @@ void Comm::set_status(Comm_Status status) {
     this->status = status;
 }
 
-[[nodiscard]] Pair<char*, ssize_t> Comm::read_line() const {
+[[nodiscard]] Pair<char*, ssize_t> Comm::read_line() const noexcept {
     constexpr size_t BUF_SIZE = 1024;
     char* buf = new char[BUF_SIZE];  // caller must delete[]
     size_t len = 0;
