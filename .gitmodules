@@ -1,0 +1,3 @@
+[submodule "src/si"]
+	path = src/si
+	url = https://github.com/Silicon27/si.git

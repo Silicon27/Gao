@@ -24,6 +24,12 @@ void operator delete[](void* ptr, const nothrow_t&) noexcept {
 }
 
 template <typename T, typename U>
+Pair<T, U>::Pair(T first, U second) : first(first), second(second) {}
+
+template <typename T, typename U>
+Pair<T, U>::Pair() : first(), second() {}
+
+template <typename T, typename U>
 Pair<T, U> make_pair(T first, U second) {
     return Pair<T, U>{first, second};
 }

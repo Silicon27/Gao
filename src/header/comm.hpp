@@ -10,6 +10,9 @@
 
 #include <unistd.h>
 #include <stddef.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <pthread.h>
 
 struct nothrow_t {
     explicit nothrow_t() = default;
@@ -30,8 +33,8 @@ struct Pair {
     typedef T first_type;
     typedef U second_type;
 
-    Pair(T first, U second) : first(first), second(second) {}
-    Pair() : first(), second() {}
+    Pair(T first, U second);
+    Pair();
 };
 
 // T or U may have move/copy constructors that throw,
