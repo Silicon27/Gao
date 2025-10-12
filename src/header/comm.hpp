@@ -38,9 +38,20 @@ struct Pair {
 };
 
 // T or U may have move/copy constructors that throw,
-// so we don't mark as noexcept and try-catch in case of possible exception
+// so we don't mark as noexcept and try-catch in case of possible exception.
 template <typename T, typename U>
 Pair<T, U> make_pair(T first, U second);
+
+/// Startup struct that runs on launch of a Gao process and contains host PID.
+/// Also, coordinator of watchdog thread to the host process
+struct Startup {
+    int launch_host_process_watchdog();        // launch watchdog for host process status
+    static int query_host_process_watchdog();  // query the watchdog for host process status
+
+    explicit Startup(pid_t host_process_pid);
+private:
+    pid_t host_process_pid;
+};
 
 enum class Comm_Status {
     Active,  // actively transmits all thats transferable
