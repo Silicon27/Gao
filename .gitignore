@@ -1,1 +1,6 @@
 cmake-build-debug/
+latex/
+html/
+man/
+xml/
+rtf/
